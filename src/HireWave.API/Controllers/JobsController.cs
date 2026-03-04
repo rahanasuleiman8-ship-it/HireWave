@@ -22,7 +22,7 @@ public class JobsController : ControllerBase
     private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)
         ?? User.FindFirstValue("sub")!;
 
-    // GET: api/jobs — public, no auth required
+    // GET: api/jobs — public
     [HttpGet]
     public async Task<IActionResult> GetAll()
     {
@@ -44,6 +44,93 @@ public class JobsController : ControllerBase
                 PostedAt = j.PostedAt,
                 EmployerId = j.EmployerId,
                 EmployerName = j.Employer.FirstName + " " + j.Employer.LastName
+            })
+            .ToListAsync();
+
+        return Ok(jobs);
+    }
+
+    // GET: api/jobs/search — public, must be before {id} route
+    [HttpGet("search")]
+    public async Task<IActionResult> Search([FromQuery] JobSearchDto query)
+    {
+        var jobs = _context.Jobs
+            .Where(j => j.IsActive)
+            .Include(j => j.Employer)
+            .AsQueryable();
+
+        if (!string.IsNullOrWhiteSpace(query.Keyword))
+            jobs = jobs.Where(j =>
+                j.Title.ToLower().Contains(query.Keyword.ToLower()) ||
+                j.Description.ToLower().Contains(query.Keyword.ToLower()) ||
+                j.Company.ToLower().Contains(query.Keyword.ToLower()));
+
+        if (!string.IsNullOrWhiteSpace(query.Location))
+            jobs = jobs.Where(j => j.Location.ToLower().Contains(query.Location.ToLower()));
+
+        if (!string.IsNullOrWhiteSpace(query.JobType) &&
+            Enum.TryParse<HireWave.API.Models.Enums.JobType>(query.JobType, true, out var jobType))
+            jobs = jobs.Where(j => j.JobType == jobType);
+
+        if (query.MinSalary.HasValue)
+            jobs = jobs.Where(j => j.SalaryMax >= query.MinSalary);
+
+        var totalCount = await jobs.CountAsync();
+
+        var items = await jobs
+            .OrderByDescending(j => j.PostedAt)
+            .Skip((query.Page - 1) * query.PageSize)
+            .Take(query.PageSize)
+            .Select(j => new JobResponseDto
+            {
+                Id = j.Id,
+                Title = j.Title,
+                Description = j.Description,
+                Company = j.Company,
+                Location = j.Location,
+                SalaryMin = j.SalaryMin,
+                SalaryMax = j.SalaryMax,
+                JobType = j.JobType.ToString(),
+                IsActive = j.IsActive,
+                PostedAt = j.PostedAt,
+                EmployerId = j.EmployerId,
+                EmployerName = j.Employer.FirstName + " " + j.Employer.LastName
+            })
+            .ToListAsync();
+
+        return Ok(new PagedResultDto<JobResponseDto>
+        {
+            Items = items,
+            TotalCount = totalCount,
+            Page = query.Page,
+            PageSize = query.PageSize
+        });
+    }
+
+    // GET: api/jobs/mine — employer only
+    [HttpGet("mine")]
+    [Authorize(Roles = "Employer")]
+    public async Task<IActionResult> GetMyJobs()
+    {
+        var userId = GetUserId();
+
+        var jobs = await _context.Jobs
+            .Where(j => j.EmployerId == userId)
+            .OrderByDescending(j => j.PostedAt)
+            .Select(j => new JobResponseDto
+            {
+                Id = j.Id,
+                Title = j.Title,
+                Description = j.Description,
+                Company = j.Company,
+                Location = j.Location,
+                SalaryMin = j.SalaryMin,
+                SalaryMax = j.SalaryMax,
+                JobType = j.JobType.ToString(),
+                IsActive = j.IsActive,
+                PostedAt = j.PostedAt,
+                EmployerId = j.EmployerId,
+                EmployerName = ""
             })
             .ToListAsync();
 
@@ -78,36 +165,6 @@ public class JobsController : ControllerBase
             return NotFound();
 
         return Ok(job);
-    }
-
-    // GET: api/jobs/mine — employer only
-    [HttpGet("mine")]
-    [Authorize(Roles = "Employer")]
-    public async Task<IActionResult> GetMyJobs()
-    {
-        var userId = GetUserId();
-
-        var jobs = await _context.Jobs
-            .Where(j => j.EmployerId == userId)
-            .OrderByDescending(j => j.PostedAt)
-            .Select(j => new JobResponseDto
-            {
-                Id = j.Id,
-                Title = j.Title,
-                Description = j.Description,
-                Company = j.Company,
-                Location = j.Location,
-                SalaryMin = j.SalaryMin,
-                SalaryMax = j.SalaryMax,
-                JobType = j.JobType.ToString(),
-                IsActive = j.IsActive,
-                PostedAt = j.PostedAt,
-                EmployerId = j.EmployerId,
-                EmployerName = ""
-            })
-            .ToListAsync();
-
-        return Ok(jobs);
     }
 
     // POST: api/jobs — employer only
