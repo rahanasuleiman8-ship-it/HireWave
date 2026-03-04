@@ -3,6 +3,7 @@ using HireWave.API.Data;
 using HireWave.API.DTOs;
 using HireWave.API.Models;
 using HireWave.API.Models.Enums;
+using HireWave.API.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -15,11 +16,13 @@ public class ApplicationsController : ControllerBase
 {
     private readonly AppDbContext _context;
     private readonly IWebHostEnvironment _env;
+    private readonly IEmailService _emailService;
 
-    public ApplicationsController(AppDbContext context, IWebHostEnvironment env)
+    public ApplicationsController(AppDbContext context, IWebHostEnvironment env, IEmailService emailService)
     {
         _context = context;
         _env = env;
+        _emailService = emailService;
     }
 
     private string GetUserId() => User.FindFirstValue(ClaimTypes.NameIdentifier)
@@ -32,12 +35,13 @@ public class ApplicationsController : ControllerBase
     {
         var userId = GetUserId();
 
-        // Check job exists and is active
-        var job = await _context.Jobs.FirstOrDefaultAsync(j => j.Id == dto.JobId && j.IsActive);
+        var job = await _context.Jobs
+            .Include(j => j.Employer)
+            .FirstOrDefaultAsync(j => j.Id == dto.JobId && j.IsActive);
+
         if (job == null)
             return NotFound("Job not found or no longer active.");
 
-        // Prevent duplicate applications
         var existing = await _context.JobApplications
             .FirstOrDefaultAsync(a => a.JobId == dto.JobId && a.ApplicantId == userId);
         if (existing != null)
@@ -79,6 +83,40 @@ public class ApplicationsController : ControllerBase
 
         _context.JobApplications.Add(application);
         await _context.SaveChangesAsync();
+
+        // Load applicant info for email
+        var applicant = await _context.Users.FindAsync(userId);
+
+        // Email to seeker — confirmation
+        await _emailService.SendEmailAsync(
+            applicant!.Email!,
+            $"{applicant.FirstName} {applicant.LastName}",
+            $"Application Received — {job.Title} at {job.Company}",
+            $"""
+            <h2>Application Received!</h2>
+            <p>Hi {applicant.FirstName},</p>
+            <p>Your application for <strong>{job.Title}</strong> at <strong>{job.Company}</strong> has been received.</p>
+            <p>We'll notify you when the employer reviews your application.</p>
+            <br/>
+            <p>Good luck!</p>
+            <p>The HireWave Team</p>
+            """
+        );
+
+        // Email to employer — new applicant
+        await _emailService.SendEmailAsync(
+            job.Employer.Email!,
+            $"{job.Employer.FirstName} {job.Employer.LastName}",
+            $"New Application — {job.Title}",
+            $"""
+            <h2>New Application Received</h2>
+            <p>Hi {job.Employer.FirstName},</p>
+            <p><strong>{applicant.FirstName} {applicant.LastName}</strong> has applied for your job: <strong>{job.Title}</strong>.</p>
+            <p>Log in to HireWave to review their application.</p>
+            <br/>
+            <p>The HireWave Team</p>
+            """
+        );
 
         return CreatedAtAction(nameof(GetMyApplications), new { }, new ApplicationResponseDto
         {
@@ -124,14 +162,13 @@ public class ApplicationsController : ControllerBase
         return Ok(applications);
     }
 
-    // GET: api/applications/job/{jobId} — employer views applicants for their job
+    // GET: api/applications/job/{jobId} — employer views applicants
     [HttpGet("job/{jobId}")]
     [Authorize(Roles = "Employer")]
     public async Task<IActionResult> GetJobApplications(int jobId)
     {
         var userId = GetUserId();
 
-        // Verify the job belongs to this employer
         var job = await _context.Jobs
             .FirstOrDefaultAsync(j => j.Id == jobId && j.EmployerId == userId);
 
@@ -162,7 +199,7 @@ public class ApplicationsController : ControllerBase
         return Ok(applications);
     }
 
-    // PUT: api/applications/{id}/status — employer updates application status
+    // PUT: api/applications/{id}/status — employer updates status
     [HttpPut("{id}/status")]
     [Authorize(Roles = "Employer")]
     public async Task<IActionResult> UpdateStatus(int id, UpdateApplicationStatusDto dto)
@@ -171,6 +208,7 @@ public class ApplicationsController : ControllerBase
 
         var application = await _context.JobApplications
             .Include(a => a.Job)
+            .Include(a => a.Applicant)
             .FirstOrDefaultAsync(a => a.Id == id && a.Job.EmployerId == userId);
 
         if (application == null)
@@ -183,6 +221,21 @@ public class ApplicationsController : ControllerBase
         application.UpdatedAt = DateTime.UtcNow;
 
         await _context.SaveChangesAsync();
+
+        // Email to seeker — status update
+        await _emailService.SendEmailAsync(
+            application.Applicant.Email!,
+            $"{application.Applicant.FirstName} {application.Applicant.LastName}",
+            $"Application Update — {application.Job.Title}",
+            $"""
+            <h2>Your Application Status Has Been Updated</h2>
+            <p>Hi {application.Applicant.FirstName},</p>
+            <p>Your application for <strong>{application.Job.Title}</strong> at <strong>{application.Job.Company}</strong> has been updated to: <strong>{status}</strong>.</p>
+            <br/>
+            <p>Good luck!</p>
+            <p>The HireWave Team</p>
+            """
+        );
 
         return NoContent();
     }

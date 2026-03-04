@@ -1,8 +1,8 @@
 using System.Security.Claims;
+using HireWave.API.Services;
 using System.Text;
 using HireWave.API.Data;
 using HireWave.API.Models;
-using HireWave.API.Services;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -50,6 +50,7 @@ builder.Services.AddAuthorization();
 
 // Services
 builder.Services.AddScoped<JwtService>();
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
