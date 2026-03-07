@@ -1,7 +1,7 @@
 import axios from 'axios';
 
 const client = axios.create({
-  baseURL: 'http://localhost:5264/api',
+  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:5264/api',
 });
 
 client.interceptors.request.use((config) => {
@@ -16,7 +16,8 @@ client.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.clear();
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
       window.location.href = '/login';
     }
     return Promise.reject(error);
