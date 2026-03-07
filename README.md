@@ -4,6 +4,8 @@ A full-stack job board application built with **.NET 8 Web API** and **React**, 
 
 > Built as a portfolio project to demonstrate full-stack .NET development skills.
 
+🌐 **Live Demo:** https://hire-wave-ten.vercel.app
+
 ---
 
 ## Screenshots
