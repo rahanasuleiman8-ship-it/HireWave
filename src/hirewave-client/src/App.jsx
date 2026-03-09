@@ -19,10 +19,14 @@ function ProtectedRoute({ children, role }) {
 
 export default function App() {
   const { loading } = useAuth();
-  if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>;
+  if (loading) return (
+    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0d3d4a' }}>
+      <div style={{ width: 32, height: 32, border: '2px solid #1e6070', borderTopColor: '#2dd4bf', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+    </div>
+  );
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div style={{ minHeight: '100vh', background: 'var(--hw-bg)' }}>
       <Navbar />
       <Routes>
         <Route path="/" element={<HomePage />} />
