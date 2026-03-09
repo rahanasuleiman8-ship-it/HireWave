@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
+import { PageWrapper } from './components/PageTransition';
 import HomePage from './pages/HomePage';
 import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
@@ -19,37 +20,49 @@ function ProtectedRoute({ children, role }) {
 
 export default function App() {
   const { loading } = useAuth();
+
   if (loading) return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#0d3d4a' }}>
-      <div style={{ width: 32, height: 32, border: '2px solid #1e6070', borderTopColor: '#2dd4bf', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+    <div style={{
+      minHeight: '100vh', display: 'flex', alignItems: 'center',
+      justifyContent: 'center', background: '#0d3d4a'
+    }}>
+      <div style={{
+        width: 36, height: 36,
+        border: '2px solid #1e6070',
+        borderTopColor: '#2dd4bf',
+        borderRadius: '50%',
+        animation: 'spin 0.8s linear infinite'
+      }} />
     </div>
   );
 
   return (
     <div style={{ minHeight: '100vh', background: 'var(--hw-bg)' }}>
       <Navbar />
-      <Routes>
-        <Route path="/" element={<HomePage />} />
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/register" element={<RegisterPage />} />
-        <Route path="/jobs" element={<JobsPage />} />
-        <Route path="/jobs/:id" element={<JobDetailPage />} />
-        <Route path="/my-applications" element={
-          <ProtectedRoute role="JobSeeker">
-            <MyApplicationsPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/dashboard" element={
-          <ProtectedRoute role="Employer">
-            <EmployerDashboardPage />
-          </ProtectedRoute>
-        } />
-        <Route path="/post-job" element={
-          <ProtectedRoute role="Employer">
-            <PostJobPage />
-          </ProtectedRoute>
-        } />
-      </Routes>
+      <PageWrapper>
+        <Routes>
+          <Route path="/" element={<HomePage />} />
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/jobs" element={<JobsPage />} />
+          <Route path="/jobs/:id" element={<JobDetailPage />} />
+          <Route path="/my-applications" element={
+            <ProtectedRoute role="JobSeeker">
+              <MyApplicationsPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/dashboard" element={
+            <ProtectedRoute role="Employer">
+              <EmployerDashboardPage />
+            </ProtectedRoute>
+          } />
+          <Route path="/post-job" element={
+            <ProtectedRoute role="Employer">
+              <PostJobPage />
+            </ProtectedRoute>
+          } />
+        </Routes>
+      </PageWrapper>
     </div>
   );
 }
