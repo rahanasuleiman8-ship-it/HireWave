@@ -1,1 +1,48 @@
 @import "tailwindcss";
+
+:root {
+  --hw-bg: #0d3d4a;
+  --hw-bg-dark: #0a2f3a;
+  --hw-bg-card: #0f4c5c;
+  --hw-bg-card2: #113d4a;
+  --hw-surface: #1a5568;
+  --hw-surface2: #164e5e;
+  --hw-teal: #2dd4bf;
+  --hw-teal-dark: #14b8a6;
+  --hw-teal-light: #5eead4;
+  --hw-text: #e2f4f7;
+  --hw-text-muted: #7fb8c8;
+  --hw-text-dim: #4a8fa0;
+  --hw-border: #1e6070;
+  --hw-border-light: #2a7a8a;
+  --hw-gold: #f59e0b;
+  --hw-grid: rgba(255,255,255,0.03);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  background-color: var(--hw-bg);
+  color: var(--hw-text);
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  min-height: 100vh;
+}
+
+/* Grid background pattern */
+body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background-image:
+    linear-gradient(var(--hw-grid) 1px, transparent 1px),
+    linear-gradient(90deg, var(--hw-grid) 1px, transparent 1px);
+  background-size: 40px 40px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+#root {
+  position: relative;
+  z-index: 1;
+  min-height: 100vh;
+}
