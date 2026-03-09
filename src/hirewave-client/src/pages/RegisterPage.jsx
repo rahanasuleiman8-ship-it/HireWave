@@ -4,9 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import client from '../api/client';
 
 export default function RegisterPage() {
-  const [form, setForm] = useState({
-    firstName: '', lastName: '', email: '', password: '', role: 0
-  });
+  const [form, setForm] = useState({ firstName: '', lastName: '', email: '', password: '', role: 0 });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
@@ -32,74 +30,129 @@ export default function RegisterPage() {
     }
   };
 
+  const inputStyle = {
+    background: 'rgba(26,85,104,0.6)',
+    border: '1px solid var(--hw-border)',
+    color: 'var(--hw-text)'
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-2xl shadow-md p-8 w-full max-w-md">
-        <h1 className="text-2xl font-bold text-gray-800 mb-1">Create an account</h1>
-        <p className="text-gray-500 mb-4">Join HireWave today</p>
-        <p className="text-xs text-gray-400 mb-4">Password must be 8+ characters with at least one uppercase letter and one number.</p>
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+      {/* Glow */}
+      <div style={{
+        position: 'fixed', top: '40%', left: '50%', transform: 'translate(-50%,-50%)',
+        width: 500, height: 400,
+        background: 'radial-gradient(ellipse, rgba(45,212,191,0.08) 0%, transparent 70%)',
+        pointerEvents: 'none'
+      }} />
 
-        {error && <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg mb-4 text-sm">{error}</div>}
+      <div className="w-full max-w-md relative z-10">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <Link to="/" className="inline-flex items-center gap-2">
+            <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+              <path d="M4 20 Q8 12 12 18 Q16 24 20 14 Q24 4 28 16" stroke="#2dd4bf" strokeWidth="3" strokeLinecap="round" fill="none"/>
+              <path d="M4 24 Q8 16 12 22 Q16 28 20 18 Q24 8 28 20" stroke="#14b8a6" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.6"/>
+            </svg>
+            <span className="text-xl font-bold" style={{ color: 'var(--hw-text)' }}>HireWave</span>
+          </Link>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">First Name</label>
-              <input type="text" required value={form.firstName}
-                onChange={(e) => setForm({ ...form, firstName: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
+        <div className="rounded-2xl p-8"
+          style={{ background: 'rgba(15,76,92,0.6)', border: '1px solid var(--hw-border)', backdropFilter: 'blur(12px)' }}>
+          <h1 className="text-2xl font-bold mb-1" style={{ color: 'var(--hw-text)' }}>Create an account</h1>
+          <p className="text-sm mb-1" style={{ color: 'var(--hw-text-muted)' }}>Join HireWave today</p>
+          <p className="text-xs mb-5" style={{ color: 'var(--hw-text-dim)' }}>Password: 8+ chars, 1 uppercase, 1 number</p>
+
+          {error && (
+            <div className="px-4 py-3 rounded-xl mb-4 text-sm"
+              style={{ background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)', color: '#f87171' }}>
+              {error}
             </div>
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Last Name</label>
-              <input type="text" required value={form.lastName}
-                onChange={(e) => setForm({ ...form, lastName: e.target.value })}
-                className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
+          )}
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
-            <input type="email" required value={form.email}
-              onChange={(e) => setForm({ ...form, email: e.target.value })}
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Password</label>
-            <input type="password" required value={form.password}
-              onChange={(e) => setForm({ ...form, password: e.target.value })}
-              placeholder="Min 8 chars, 1 uppercase, 1 number"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">I am a...</label>
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="grid grid-cols-2 gap-3">
-              <button type="button" onClick={() => setForm({ ...form, role: 0 })}
-                className={`py-3 rounded-lg border-2 font-medium transition ${form.role === 0 ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:border-blue-300'}`}>
-                🔍 Job Seeker
-              </button>
-              <button type="button" onClick={() => setForm({ ...form, role: 1 })}
-                className={`py-3 rounded-lg border-2 font-medium transition ${form.role === 1 ? 'border-blue-600 bg-blue-50 text-blue-700' : 'border-gray-200 text-gray-600 hover:border-blue-300'}`}>
-                🏢 Employer
-              </button>
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--hw-text-muted)' }}>First Name</label>
+                <input type="text" required value={form.firstName}
+                  onChange={(e) => setForm({ ...form, firstName: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none"
+                  style={inputStyle}
+                  onFocus={e => e.target.style.borderColor = 'var(--hw-teal-dark)'}
+                  onBlur={e => e.target.style.borderColor = 'var(--hw-border)'}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--hw-text-muted)' }}>Last Name</label>
+                <input type="text" required value={form.lastName}
+                  onChange={(e) => setForm({ ...form, lastName: e.target.value })}
+                  className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none"
+                  style={inputStyle}
+                  onFocus={e => e.target.style.borderColor = 'var(--hw-teal-dark)'}
+                  onBlur={e => e.target.style.borderColor = 'var(--hw-border)'}
+                />
+              </div>
             </div>
-          </div>
 
-          <button type="submit" disabled={loading}
-            className="w-full bg-blue-700 text-white py-3 rounded-lg font-semibold hover:bg-blue-800 transition disabled:opacity-50">
-            {loading ? 'Creating account...' : 'Create Account'}
-          </button>
-        </form>
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--hw-text-muted)' }}>Email</label>
+              <input type="email" required value={form.email}
+                onChange={(e) => setForm({ ...form, email: e.target.value })}
+                className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none"
+                style={inputStyle}
+                onFocus={e => e.target.style.borderColor = 'var(--hw-teal-dark)'}
+                onBlur={e => e.target.style.borderColor = 'var(--hw-border)'}
+              />
+            </div>
 
-        <p className="text-center text-sm text-gray-500 mt-6">
-          Already have an account?{' '}
-          <Link to="/login" className="text-blue-700 font-medium hover:underline">Log in</Link>
-        </p>
+            <div>
+              <label className="block text-xs font-medium mb-1.5" style={{ color: 'var(--hw-text-muted)' }}>Password</label>
+              <input type="password" required value={form.password}
+                onChange={(e) => setForm({ ...form, password: e.target.value })}
+                placeholder="Min 8 chars, 1 uppercase, 1 number"
+                className="w-full px-4 py-2.5 rounded-xl text-sm focus:outline-none"
+                style={inputStyle}
+                onFocus={e => e.target.style.borderColor = 'var(--hw-teal-dark)'}
+                onBlur={e => e.target.style.borderColor = 'var(--hw-border)'}
+              />
+            </div>
+
+            {/* Role selector */}
+            <div>
+              <label className="block text-xs font-medium mb-2" style={{ color: 'var(--hw-text-muted)' }}>I am a...</label>
+              <div className="grid grid-cols-2 gap-3">
+                <button type="button" onClick={() => setForm({ ...form, role: 0 })}
+                  className="py-3 rounded-xl text-sm font-semibold transition-all"
+                  style={form.role === 0
+                    ? { background: 'rgba(45,212,191,0.15)', border: '2px solid var(--hw-teal)', color: 'var(--hw-teal)' }
+                    : { background: 'rgba(26,85,104,0.4)', border: '2px solid var(--hw-border)', color: 'var(--hw-text-muted)' }
+                  }>
+                  🔍 Job Seeker
+                </button>
+                <button type="button" onClick={() => setForm({ ...form, role: 1 })}
+                  className="py-3 rounded-xl text-sm font-semibold transition-all"
+                  style={form.role === 1
+                    ? { background: 'rgba(45,212,191,0.15)', border: '2px solid var(--hw-teal)', color: 'var(--hw-teal)' }
+                    : { background: 'rgba(26,85,104,0.4)', border: '2px solid var(--hw-border)', color: 'var(--hw-text-muted)' }
+                  }>
+                  🏢 Employer
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" disabled={loading}
+              className="w-full py-3 rounded-xl font-semibold text-sm transition hover:opacity-90 disabled:opacity-50"
+              style={{ background: 'var(--hw-teal)', color: '#0a2f3a' }}>
+              {loading ? 'Creating account...' : 'Create Account'}
+            </button>
+          </form>
+
+          <p className="text-center text-sm mt-6" style={{ color: 'var(--hw-text-muted)' }}>
+            Already have an account?{' '}
+            <Link to="/login" style={{ color: 'var(--hw-teal)' }} className="font-medium hover:underline">Log in</Link>
+          </p>
+        </div>
       </div>
     </div>
   );
