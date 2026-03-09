@@ -1,10 +1,29 @@
 # HireWave 🌊
 
+![Status](https://img.shields.io/badge/Status-Active-brightgreen)
+![Year](https://img.shields.io/badge/Year-2026-blue)
+![.NET](https://img.shields.io/badge/.NET-8.0-purple)
+![React](https://img.shields.io/badge/React-18-61DAFB?logo=react)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16-336791?logo=postgresql)
+![Docker](https://img.shields.io/badge/Docker-Compose-2496ED?logo=docker)
+![JWT](https://img.shields.io/badge/Auth-JWT-orange)
+
 A full-stack job board application built with **.NET 8 Web API** and **React**, inspired by Indeed. Employers can post jobs and manage applicants. Job seekers can browse, search, and apply — with email notifications at every step.
 
 > Built as a portfolio project to demonstrate full-stack .NET development skills.
 
 🌐 **Live Demo:** https://hire-wave-ten.vercel.app
+
+---
+
+## 📅 Project Timeline
+
+| | |
+|---|---|
+| **Start Date** | October 2025 |
+| **Completion Date** | February 2026 |
+| **Duration** | ~4 months |
+| **Status** | ✅ Complete & Deployed |
 
 ---
 
@@ -78,51 +97,41 @@ docker compose up -d
 ```
 
 This starts:
-- PostgreSQL on port `5433`
-- Mailpit (local email) on port `1025` (UI at http://localhost:8025)
+- **PostgreSQL 16** on port `5433`
+- **Mailpit** (dev email catcher) on port `1025` (UI at `http://localhost:8025`)
 
 ### 3. Configure the API
-
-Copy the example config and fill in your values:
-```bash
-cp src/HireWave.API/appsettings.example.json src/HireWave.API/appsettings.json
-```
-
-`appsettings.json` is gitignored — never commit secrets.
-
-### 4. Run database migrations
 ```bash
 cd src/HireWave.API
-dotnet ef database update
+cp appsettings.example.json appsettings.json
+# Edit appsettings.json with your settings
 ```
 
-### 5. Start the API
+### 4. Run the API
 ```bash
 dotnet run
+# API runs at https://localhost:7001
 ```
 
-API runs at: http://localhost:5264  
-Swagger UI: http://localhost:5264/swagger
-
-### 6. Start the frontend
+### 5. Run the frontend
 ```bash
-cd ../hirewave-client
+cd src/hirewave-client
 npm install
 npm run dev
+# Frontend runs at http://localhost:5173
 ```
-
-Frontend runs at: http://localhost:5173
 
 ---
 
 ## Project Structure
+
 ```
 HireWave/
 ├── src/
 │   ├── HireWave.API/               # .NET 8 Web API
 │   │   ├── Controllers/            # Auth, Jobs, Applications
-│   │   ├── Data/                   # AppDbContext (EF Core)
-│   │   ├── DTOs/                   # Request/response models
+│   │   ├── DTOs/                   # Request/Response models
+│   │   ├── Data/                   # EF Core DbContext + Migrations
 │   │   ├── Models/                 # Domain entities + enums
 │   │   ├── Services/               # JwtService, EmailService
 │   │   └── wwwroot/uploads/cvs/    # CV file storage
@@ -193,9 +202,10 @@ The API reads from `appsettings.json` (gitignored). Use `appsettings.example.jso
 
 ## Author
 
-Built by **Rahana** — aspiring .NET developer based in the UK.
+Built by **Rahana Suleiman** — aspiring .NET developer based in the UK.
 
-- GitHub: [@rahanasuleiman8-ship-it](https://github.com/rahanasuleiman8-ship-it)
+- 🐙 GitHub: [@rahanasuleiman8-ship-it](https://github.com/rahanasuleiman8-ship-it)
+- 💼 LinkedIn: [linkedin.com/in/rahana-suleiman-106b103b1](https://www.linkedin.com/in/rahana-suleiman-106b103b1/)
 
 ---
 
