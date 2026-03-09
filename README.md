@@ -1,4 +1,4 @@
-# HireWave 🌊
+# ![HireWave Logo](docs/logo.png)
 
 ![Status](https://img.shields.io/badge/Status-Active-brightgreen)
 ![Year](https://img.shields.io/badge/Year-2026-blue)
@@ -29,16 +29,16 @@ A full-stack job board application built with **.NET 8 Web API** and **React**, 
 
 ## Screenshots
 
-### Homepage
+### 🏠 Homepage
 ![Homepage](docs/screenshots/homepage.png)
 
-### Job Listings
+### 💼 Job Listings (with real-time jobs via Remotive API)
 ![Job Listings](docs/screenshots/jobs.png)
 
-### Job Detail & Apply
+### 📄 Job Detail & Apply
 ![Job Detail](docs/screenshots/job-detail.png)
 
-### Employer Dashboard
+### 📊 Employer Dashboard & Applicant Pipeline
 ![Employer Dashboard](docs/screenshots/dashboard.png)
 
 ---
