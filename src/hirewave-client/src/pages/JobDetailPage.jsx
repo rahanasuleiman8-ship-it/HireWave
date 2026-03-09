@@ -2,12 +2,13 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import client from '../api/client';
+import { SkeletonJobDetail, SkeletonText } from '../components/PageTransition';
 
 const jobTypeColors = {
-  FullTime: { bg: 'rgba(45,212,191,0.12)', color: '#2dd4bf', border: 'rgba(45,212,191,0.3)' },
-  PartTime: { bg: 'rgba(251,191,36,0.12)', color: '#fbbf24', border: 'rgba(251,191,36,0.3)' },
-  Contract: { bg: 'rgba(167,139,250,0.12)', color: '#a78bfa', border: 'rgba(167,139,250,0.3)' },
-  Remote:   { bg: 'rgba(52,211,153,0.12)', color: '#34d399', border: 'rgba(52,211,153,0.3)' },
+  FullTime:  { bg: 'rgba(45,212,191,0.12)',  color: '#2dd4bf', border: 'rgba(45,212,191,0.3)' },
+  PartTime:  { bg: 'rgba(251,191,36,0.12)',  color: '#fbbf24', border: 'rgba(251,191,36,0.3)' },
+  Contract:  { bg: 'rgba(167,139,250,0.12)', color: '#a78bfa', border: 'rgba(167,139,250,0.3)' },
+  Remote:    { bg: 'rgba(52,211,153,0.12)',  color: '#34d399', border: 'rgba(52,211,153,0.3)' },
 };
 
 export default function JobDetailPage() {
@@ -24,10 +25,20 @@ export default function JobDetailPage() {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    client.get(`/jobs/${id}`)
-      .then((res) => setJob(res.data))
-      .catch(() => navigate('/jobs'))
-      .finally(() => setLoading(false));
+    // If it's an external Remotive job, redirect to external URL
+    if (id?.startsWith('remotive-')) {
+      navigate('/jobs');
+      return;
+    }
+    // Minimum skeleton display time for polish
+    const minDelay = new Promise(r => setTimeout(r, 700));
+    Promise.all([
+      client.get(`/jobs/${id}`).then(res => res.data).catch(() => null),
+      minDelay
+    ]).then(([data]) => {
+      if (!data) navigate('/jobs');
+      else setJob(data);
+    }).finally(() => setLoading(false));
   }, [id]);
 
   const handleApply = async (e) => {
@@ -49,19 +60,16 @@ export default function JobDetailPage() {
     }
   };
 
-  if (loading) return (
-    <div className="flex items-center justify-center py-20">
-      <div className="w-8 h-8 border-2 rounded-full animate-spin"
-        style={{ borderColor: 'var(--hw-border)', borderTopColor: 'var(--hw-teal)' }} />
-    </div>
-  );
+  if (loading) return <SkeletonJobDetail />;
   if (!job) return null;
 
   const typeStyle = jobTypeColors[job.jobType] || jobTypeColors.FullTime;
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-8">
-      {/* Back link */}
+    <div className="max-w-4xl mx-auto px-4 py-8"
+      style={{ animation: 'fadeInUp 0.4s ease' }}>
+
+      {/* Back */}
       <Link to="/jobs" className="inline-flex items-center gap-1.5 text-sm mb-6 hover:text-white transition"
         style={{ color: 'var(--hw-text-muted)' }}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
@@ -72,6 +80,7 @@ export default function JobDetailPage() {
 
       <div className="rounded-2xl p-8"
         style={{ background: 'rgba(15,76,92,0.6)', border: '1px solid var(--hw-border)' }}>
+
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div>
@@ -109,7 +118,9 @@ export default function JobDetailPage() {
         {/* Description */}
         <div className="mb-8">
           <h2 className="text-lg font-semibold mb-3" style={{ color: 'var(--hw-text)' }}>Job Description</h2>
-          <p className="leading-relaxed text-sm" style={{ color: 'var(--hw-text-muted)' }}>{job.description}</p>
+          <p className="leading-relaxed text-sm whitespace-pre-line" style={{ color: 'var(--hw-text-muted)' }}>
+            {job.description}
+          </p>
         </div>
 
         {/* Apply section */}
@@ -132,27 +143,24 @@ export default function JobDetailPage() {
         {applied && (
           <div className="px-6 py-4 rounded-xl font-medium text-sm"
             style={{ background: 'rgba(52,211,153,0.1)', border: '1px solid rgba(52,211,153,0.3)', color: '#34d399' }}>
-            ✅ Application submitted successfully! You'll receive a confirmation email shortly.
+            ✅ Application submitted! You'll receive a confirmation email shortly.
           </div>
         )}
 
         {showForm && (
           <form onSubmit={handleApply} className="mt-4 space-y-4 p-6 rounded-xl"
-            style={{ background: 'rgba(10,47,58,0.6)', border: '1px solid var(--hw-border)' }}>
+            style={{ background: 'rgba(10,47,58,0.6)', border: '1px solid var(--hw-border)', animation: 'fadeInUp 0.3s ease' }}>
             <h3 className="font-semibold text-lg" style={{ color: 'var(--hw-text)' }}>Your Application</h3>
-
             {error && (
               <div className="px-4 py-3 rounded-xl text-sm"
                 style={{ background: 'rgba(248,113,113,0.1)', border: '1px solid rgba(248,113,113,0.3)', color: '#f87171' }}>
                 {error}
               </div>
             )}
-
             <div>
               <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--hw-text-muted)' }}>Cover Letter</label>
-              <textarea
-                rows={5} value={coverLetter}
-                onChange={(e) => setCoverLetter(e.target.value)}
+              <textarea rows={5} value={coverLetter}
+                onChange={e => setCoverLetter(e.target.value)}
                 placeholder="Tell the employer why you're a great fit..."
                 className="w-full px-4 py-3 rounded-xl text-sm focus:outline-none resize-none"
                 style={{ background: 'rgba(26,85,104,0.6)', border: '1px solid var(--hw-border)', color: 'var(--hw-text)' }}
@@ -160,19 +168,16 @@ export default function JobDetailPage() {
                 onBlur={e => e.target.style.borderColor = 'var(--hw-border)'}
               />
             </div>
-
             <div>
               <label className="block text-sm font-medium mb-1.5" style={{ color: 'var(--hw-text-muted)' }}>
                 Upload CV <span style={{ color: 'var(--hw-text-dim)' }}>(PDF or Word, max 5MB)</span>
               </label>
-              <input
-                type="file" accept=".pdf,.doc,.docx"
-                onChange={(e) => setCvFile(e.target.files[0])}
-                className="w-full text-sm file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:font-medium file:text-sm"
-                style={{ color: 'var(--hw-text-muted)', '--file-bg': 'rgba(45,212,191,0.15)' }}
+              <input type="file" accept=".pdf,.doc,.docx"
+                onChange={e => setCvFile(e.target.files[0])}
+                className="w-full text-sm"
+                style={{ color: 'var(--hw-text-muted)' }}
               />
             </div>
-
             <div className="flex gap-3">
               <button type="submit" disabled={applying}
                 style={{ background: 'var(--hw-teal)', color: '#0a2f3a' }}
